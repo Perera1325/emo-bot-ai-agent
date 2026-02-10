@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EMO-BOT 🤖</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ROBOT SECTION -->
+    <div class="robot-area">
+      <div class="robot glow-neutral" id="robot">
+        <div class="antenna"></div>
+        <div class="head">
+          <div class="eye left"></div>
+          <div class="eye right"></div>
+          <div class="mouth"></div>
+        </div>
+        <div class="body"></div>
+      </div>
+      <div class="emotion-text" id="emotion">neutral 🙂</div>
+    </div>
+
+    <!-- CHAT SECTION -->
+    <div class="chat-area">
+      <div id="chat"></div>
+
+      <div class="input-area">
+        <input id="input" placeholder="Talk to EMO-BOT..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
