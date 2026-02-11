@@ -1,161 +1,129 @@
-// ================================
-// EMO-BOT Advanced Frontend Script
-// ================================
+// ===== THREE JS SETUP =====
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// 🔗 Backend API URL (Render)
-const API_URL = "https://emo-bot-backend.onrender.com/chat";
+camera.position.z = 5;
 
-// DOM Elements
-const chatBox = document.getElementById("chat");
-const inputField = document.getElementById("input");
-const emotionText = document.getElementById("emotion");
+// ===== LIGHTING =====
+const light = new THREE.PointLight(0x00ffff, 2, 100);
+light.position.set(5,5,5);
+scene.add(light);
 
-// ================================
-// ROBOT EMOTION SYSTEM
-// ================================
+// ===== ROBOT HEAD =====
+const headGeometry = new THREE.BoxGeometry(2,2,2);
+const headMaterial = new THREE.MeshStandardMaterial({
+    color: 0x001f2f,
+    emissive: 0x00ffff,
+    emissiveIntensity: 0.2,
+    metalness: 1,
+    roughness: 0.2
+});
+const head = new THREE.Mesh(headGeometry, headMaterial);
+scene.add(head);
 
-const robotFace = document.querySelector(".robot");
-let currentEmotion = "neutral";
-
-// Emotion styles
-function setEmotion(emotion) {
-    currentEmotion = emotion;
-    emotionText.innerText = emotion + " 🤖";
-
-    robotFace.classList.remove("happy", "sad", "thinking", "angry");
-
-    switch (emotion) {
-        case "happy":
-            robotFace.classList.add("happy");
-            break;
-        case "sad":
-            robotFace.classList.add("sad");
-            break;
-        case "thinking":
-            robotFace.classList.add("thinking");
-            break;
-        case "angry":
-            robotFace.classList.add("angry");
-            break;
-        default:
-            break;
-    }
-}
-
-// Auto blinking
-setInterval(() => {
-    robotFace.classList.add("blink");
-    setTimeout(() => {
-        robotFace.classList.remove("blink");
-    }, 200);
-}, 4000);
-
-// ================================
-// CHAT FUNCTIONS
-// ================================
-
-function addMessage(sender, message) {
-    const messageDiv = document.createElement("div");
-
-    messageDiv.className = sender === "user"
-        ? "message user-message"
-        : "message bot-message";
-
-    messageDiv.innerHTML = `<strong>${sender === "user" ? "You" : "EMO-BOT"}:</strong> ${message}`;
-
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function showTyping() {
-    const typingDiv = document.createElement("div");
-    typingDiv.className = "message bot-message typing";
-    typingDiv.id = "typing";
-    typingDiv.innerHTML = "EMO-BOT is thinking...";
-    chatBox.appendChild(typingDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function removeTyping() {
-    const typing = document.getElementById("typing");
-    if (typing) typing.remove();
-}
-
-// ================================
-// SEND MESSAGE
-// ================================
-
-async function sendMessage() {
-    const userInput = inputField.value.trim();
-    if (!userInput) return;
-
-    addMessage("user", userInput);
-    inputField.value = "";
-    setEmotion("thinking");
-    showTyping();
-
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: userInput })
-        });
-
-        if (!response.ok) {
-            throw new Error("Server error");
-        }
-
-        const data = await response.json();
-        removeTyping();
-
-        addMessage("bot", data.reply);
-
-        // Smart emotion detection
-        if (data.reply.toLowerCase().includes("love") ||
-            data.reply.toLowerCase().includes("great") ||
-            data.reply.toLowerCase().includes("happy")) {
-            setEmotion("happy");
-        }
-        else if (data.reply.toLowerCase().includes("sorry") ||
-            data.reply.toLowerCase().includes("sad")) {
-            setEmotion("sad");
-        }
-        else {
-            setEmotion("neutral");
-        }
-
-    } catch (error) {
-        removeTyping();
-        addMessage("bot", "⚠️ Backend not running or waking up... please wait 30 seconds and try again.");
-        setEmotion("sad");
-        console.error("Error:", error);
-    }
-}
-
-// ================================
-// ENTER KEY SUPPORT
-// ================================
-
-inputField.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-        sendMessage();
-    }
+// ===== EYES =====
+const eyeGeometry = new THREE.SphereGeometry(0.3,32,32);
+const eyeMaterial = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    emissive: 0x00ffff,
+    emissiveIntensity: 1
 });
 
-// ================================
-// BACKEND HEALTH CHECK
-// ================================
+const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+leftEye.position.set(-0.5,0.3,1.1);
+scene.add(leftEye);
 
-async function checkBackend() {
+const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+rightEye.position.set(0.5,0.3,1.1);
+scene.add(rightEye);
+
+// ===== MOUTH =====
+const mouthGeometry = new THREE.BoxGeometry(0.8,0.1,0.1);
+const mouthMaterial = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    emissive: 0x00ffff
+});
+const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
+mouth.position.set(0,-0.5,1.1);
+scene.add(mouth);
+
+// ===== FLOATING ANIMATION =====
+let time = 0;
+function animate() {
+    requestAnimationFrame(animate);
+
+    time += 0.02;
+
+    head.rotation.y += 0.005;
+    head.position.y = Math.sin(time) * 0.2;
+
+    leftEye.scale.y = 1 + Math.sin(time*3)*0.1;
+    rightEye.scale.y = 1 + Math.sin(time*3)*0.1;
+
+    renderer.render(scene, camera);
+}
+animate();
+
+// ===== CHAT SYSTEM =====
+const backendURL = "https://emo-bot-backend.onrender.com/chat";
+
+async function sendMessage() {
+    const input = document.getElementById("input");
+    const messages = document.getElementById("messages");
+
+    const text = input.value.trim();
+    if(!text) return;
+
+    messages.innerHTML += `<div class="message user">You: ${text}</div>`;
+    input.value = "";
+
     try {
-        const response = await fetch("https://emo-bot-backend.onrender.com");
-        if (!response.ok) throw new Error();
-        console.log("Backend connected ✅");
-    } catch {
-        addMessage("bot", "⚠️ Backend is sleeping (Render free plan). First message may take 30 seconds.");
+        const response = await fetch(backendURL,{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ message: text })
+        });
+
+        const data = await response.json();
+        messages.innerHTML += `<div class="message bot">EMO-BOT: ${data.reply}</div>`;
+
+        updateEmotion(data.emotion);
+
+    } catch (error) {
+        messages.innerHTML += `<div class="message bot">⚠ Backend error</div>`;
+    }
+
+    messages.scrollTop = messages.scrollHeight;
+}
+
+// ===== EMOTION SYSTEM =====
+function updateEmotion(emotion){
+
+    if(emotion === "happy"){
+        eyeMaterial.color.set(0x00ff88);
+        eyeMaterial.emissive.set(0x00ff88);
+        mouth.scale.y = 2;
+    }
+    else if(emotion === "sad"){
+        eyeMaterial.color.set(0x5555ff);
+        mouth.scale.y = 0.3;
+    }
+    else if(emotion === "angry"){
+        eyeMaterial.color.set(0xff0000);
+        mouth.scale.y = 0.2;
+    }
+    else {
+        eyeMaterial.color.set(0x00ffff);
+        mouth.scale.y = 1;
     }
 }
 
-checkBackend();
+// ===== RESIZE FIX =====
+window.addEventListener("resize",()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+});

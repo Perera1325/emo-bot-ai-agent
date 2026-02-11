@@ -2,33 +2,86 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EMO-BOT 🤖</title>
-<link rel="stylesheet" href="style.css">
+<title>EMO-BOT 2080 🤖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at center, #001f2f, #000814);
+    color: white;
+}
+
+#chatContainer {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    backdrop-filter: blur(20px);
+    background: rgba(0, 20, 40, 0.6);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 0 30px #00ffff33;
+}
+
+#messages {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.message {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+
+.user {
+    background: #00ffff22;
+}
+
+.bot {
+    background: #0088ff22;
+}
+
+#inputArea {
+    display: flex;
+}
+
+#input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+}
+
+button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    background: #00ffff;
+    color: black;
+    cursor: pointer;
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-
-    <div class="robot-area">
-        <div class="robot">
-            <div class="eye"></div>
-            <div class="eye"></div>
-            <div class="mouth"></div>
-        </div>
-        <div id="emotion">neutral 🙂</div>
+<div id="chatContainer">
+    <div id="messages"></div>
+    <div id="inputArea">
+        <input id="input" placeholder="Talk to EMO-BOT 2080..." />
+        <button onclick="sendMessage()">Send</button>
     </div>
-
-    <div class="chat-box">
-        <div id="chat" class="messages"></div>
-
-        <div class="input-area">
-            <input id="input" placeholder="Talk to EMO-BOT..." />
-            <button onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="script.js"></script>
+
 </body>
 </html>
