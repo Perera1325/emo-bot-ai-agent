@@ -1,97 +1,161 @@
-const robot = document.getElementById("robot");
+// ================================
+// EMO-BOT Advanced Frontend Script
+// ================================
+
+// 🔗 Backend API URL (Render)
+const API_URL = "https://emo-bot-backend.onrender.com/chat";
+
+// DOM Elements
+const chatBox = document.getElementById("chat");
+const inputField = document.getElementById("input");
 const emotionText = document.getElementById("emotion");
 
-let speakingInterval = null;
+// ================================
+// ROBOT EMOTION SYSTEM
+// ================================
 
-/* ---------------- EMOTION CONTROL ---------------- */
+const robotFace = document.querySelector(".robot");
+let currentEmotion = "neutral";
 
+// Emotion styles
 function setEmotion(emotion) {
-  robot.className = "robot";
+    currentEmotion = emotion;
+    emotionText.innerText = emotion + " 🤖";
 
-  if (emotion.includes("happy")) {
-    robot.classList.add("glow-happy");
-    document.body.style.background =
-      "radial-gradient(circle at top, #022c22, #020617)";
-  } else if (emotion.includes("sad")) {
-    robot.classList.add("glow-sad");
-    document.body.style.background =
-      "radial-gradient(circle at top, #020617, #020617)";
-  } else if (emotion.includes("angry")) {
-    robot.classList.add("glow-angry");
-    document.body.style.background =
-      "radial-gradient(circle at top, #450a0a, #020617)";
-  } else {
-    robot.classList.add("glow-neutral");
-    document.body.style.background =
-      "radial-gradient(circle at top, #0f172a, #020617)";
-  }
+    robotFace.classList.remove("happy", "sad", "thinking", "angry");
 
-  emotionText.innerText = emotion;
+    switch (emotion) {
+        case "happy":
+            robotFace.classList.add("happy");
+            break;
+        case "sad":
+            robotFace.classList.add("sad");
+            break;
+        case "thinking":
+            robotFace.classList.add("thinking");
+            break;
+        case "angry":
+            robotFace.classList.add("angry");
+            break;
+        default:
+            break;
+    }
 }
 
-/* ---------------- VOICE + MOUTH ---------------- */
+// Auto blinking
+setInterval(() => {
+    robotFace.classList.add("blink");
+    setTimeout(() => {
+        robotFace.classList.remove("blink");
+    }, 200);
+}, 4000);
 
-function speak(text) {
-  if (!window.speechSynthesis) return;
+// ================================
+// CHAT FUNCTIONS
+// ================================
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 1;
-  utterance.pitch = 1.1;
+function addMessage(sender, message) {
+    const messageDiv = document.createElement("div");
 
-  // Choose a friendly voice if available
-  const voices = speechSynthesis.getVoices();
-  utterance.voice =
-    voices.find(v => v.name.toLowerCase().includes("female")) || voices[0];
+    messageDiv.className = sender === "user"
+        ? "message user-message"
+        : "message bot-message";
 
-  // Mouth animation while speaking
-  utterance.onstart = () => {
-    const mouth = document.querySelector(".mouth");
-    speakingInterval = setInterval(() => {
-      mouth.style.height =
-        Math.random() > 0.5 ? "14px" : "6px";
-    }, 150);
-  };
+    messageDiv.innerHTML = `<strong>${sender === "user" ? "You" : "EMO-BOT"}:</strong> ${message}`;
 
-  utterance.onend = () => {
-    clearInterval(speakingInterval);
-    document.querySelector(".mouth").style.height = "6px";
-  };
-
-  speechSynthesis.speak(utterance);
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-/* ---------------- CHAT ---------------- */
+function showTyping() {
+    const typingDiv = document.createElement("div");
+    typingDiv.className = "message bot-message typing";
+    typingDiv.id = "typing";
+    typingDiv.innerHTML = "EMO-BOT is thinking...";
+    chatBox.appendChild(typingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function removeTyping() {
+    const typing = document.getElementById("typing");
+    if (typing) typing.remove();
+}
+
+// ================================
+// SEND MESSAGE
+// ================================
 
 async function sendMessage() {
-  const input = document.getElementById("input");
-  const chat = document.getElementById("chat");
+    const userInput = inputField.value.trim();
+    if (!userInput) return;
 
-  const msg = input.value.trim();
-  if (!msg) return;
+    addMessage("user", userInput);
+    inputField.value = "";
+    setEmotion("thinking");
+    showTyping();
 
-  chat.innerHTML += `<div class="user">You: ${msg}</div>`;
-  input.value = "";
-  chat.scrollTop = chat.scrollHeight;
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: userInput })
+        });
 
-  try {
-    const response = await fetch("https://emo-bot-backend.onrender.com/chat", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ message: userMessage })
+        if (!response.ok) {
+            throw new Error("Server error");
+        }
+
+        const data = await response.json();
+        removeTyping();
+
+        addMessage("bot", data.reply);
+
+        // Smart emotion detection
+        if (data.reply.toLowerCase().includes("love") ||
+            data.reply.toLowerCase().includes("great") ||
+            data.reply.toLowerCase().includes("happy")) {
+            setEmotion("happy");
+        }
+        else if (data.reply.toLowerCase().includes("sorry") ||
+            data.reply.toLowerCase().includes("sad")) {
+            setEmotion("sad");
+        }
+        else {
+            setEmotion("neutral");
+        }
+
+    } catch (error) {
+        removeTyping();
+        addMessage("bot", "⚠️ Backend not running or waking up... please wait 30 seconds and try again.");
+        setEmotion("sad");
+        console.error("Error:", error);
+    }
+}
+
+// ================================
+// ENTER KEY SUPPORT
+// ================================
+
+inputField.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
 });
 
+// ================================
+// BACKEND HEALTH CHECK
+// ================================
 
-    const data = await res.json();
-
-    chat.innerHTML += `<div class="bot">EMO-BOT: ${data.reply}</div>`;
-    chat.scrollTop = chat.scrollHeight;
-
-    setEmotion(data.emotion);
-    speak(data.reply);
-
-  } catch (err) {
-    chat.innerHTML += `<div class="bot">⚠️ Backend not running</div>`;
-  }
+async function checkBackend() {
+    try {
+        const response = await fetch("https://emo-bot-backend.onrender.com");
+        if (!response.ok) throw new Error();
+        console.log("Backend connected ✅");
+    } catch {
+        addMessage("bot", "⚠️ Backend is sleeping (Render free plan). First message may take 30 seconds.");
+    }
 }
+
+checkBackend();
