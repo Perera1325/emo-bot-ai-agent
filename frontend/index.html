@@ -1,39 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>EMO-BOT 🤖</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>EMO-BOT 🤖</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
 
-    <!-- ROBOT SECTION -->
-    <div class="robot-container">
-  <div class="robot">
-    <div class="face">
-      <div class="eyes">
-        <div class="eye left"></div>
-        <div class="eye right"></div>
-      </div>
-      <div class="mouth"></div>
+<div class="container">
+
+    <div class="robot-area">
+        <div class="robot">
+            <div class="eye"></div>
+            <div class="eye"></div>
+            <div class="mouth"></div>
+        </div>
+        <div id="emotion">neutral 🙂</div>
     </div>
-  </div>
+
+    <div class="chat-box">
+        <div id="chat" class="messages"></div>
+
+        <div class="input-area">
+            <input id="input" placeholder="Talk to EMO-BOT..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
 </div>
 
-
-    <!-- CHAT SECTION -->
-    <div class="chat-area">
-      <div id="chat"></div>
-
-      <div class="input-area">
-        <input id="input" placeholder="Talk to EMO-BOT..." />
-        <button onclick="sendMessage()">Send</button>
-      </div>
-    </div>
-
-  </div>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
